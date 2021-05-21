@@ -2,8 +2,9 @@ package miner
 
 import (
 	"BrunoCoin/pkg/block/tx"
-	"go.uber.org/atomic"
 	"sync"
+
+	"go.uber.org/atomic"
 )
 
 /*
@@ -24,15 +25,14 @@ import (
 // Cap is the maximum amount of allowed
 // transactions to store in the pool.
 type TxPool struct {
-	CurPri   	*atomic.Uint32
-	PriLim 		uint32
+	CurPri *atomic.Uint32
+	PriLim uint32
 
-	TxQ 		*tx.Heap
-	Ct			*atomic.Uint32
-	Cap         uint32
-	mutex		sync.Mutex
+	TxQ   *tx.Heap
+	Ct    *atomic.Uint32
+	Cap   uint32
+	mutex sync.Mutex
 }
-
 
 // Length returns the count of transactions
 // currently in the pool.
@@ -41,7 +41,6 @@ type TxPool struct {
 func (tp *TxPool) Length() uint32 {
 	return tp.Ct.Load()
 }
-
 
 // NewTxPool constructs a transaction pool.
 func NewTxPool(c *Config) *TxPool {
@@ -54,14 +53,12 @@ func NewTxPool(c *Config) *TxPool {
 	}
 }
 
-
 // PriMet (PriorityMet) checks to see
 // if the transaction pool has enough
 // cumulative priority to start mining.
 func (tp *TxPool) PriMet() bool {
 	return tp.CurPri.Load() >= tp.PriLim
 }
-
 
 // CalcPri (CalculatePriority) calculates the
 // priority of a transaction by dividing the
@@ -78,9 +75,18 @@ func (tp *TxPool) PriMet() bool {
 // let t be a transaction object
 // t.Sz()
 func CalcPri(t *tx.Transaction) uint32 {
-	return 0
-}
+	if t == nil {
+		return 1
+	}
 
+	pri := (t.SumOutputs() - t.SumInputs()) * 100 / t.Sz()
+
+	if pri == 0 {
+		return 1
+	}
+
+	return pri
+}
 
 // Add adds a transaction to the transaction pool.
 // If the transaction pool is full, the transaction
@@ -106,7 +112,6 @@ func (tp *TxPool) Add(t *tx.Transaction) {
 	return
 }
 
-
 // ChkTxs (CheckTransactions) checks for any duplicate
 // transactions in the heap and removes them.
 // TODO
@@ -124,5 +129,14 @@ func (tp *TxPool) Add(t *tx.Transaction) {
 // tp.mutex.Unlock()
 // tp.TxQ.Rmv(...)
 func (tp *TxPool) ChkTxs(remover []*tx.Transaction) {
-	return
+	tp.mutex.Lock()
+	defer tp.mutex.Unlock()
+
+	removed := tp.TxQ.Rmv(remover)
+	if removed != nil {
+		tp.Ct.Add(-uint32(len(removed)))
+		for _, curr_removed_transaction := range removed {
+			tp.CurPri.Add(-CalcPri(curr_removed_transaction))
+		}
+	}
 }

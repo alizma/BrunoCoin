@@ -96,7 +96,59 @@ func (bc *Blockchain) SetAddr(a string) {
 // b.NameTag()
 // txo.MkTXOLoc(...)
 func (bc *Blockchain) Add(b *block.Block) {
-	return
+	bc.Lock()
+	prev_node := bc.LastBlock //of type *BlockchainNode
+	new_utxo := make(map[string]*txo.TransactionOutput)
+
+	// put id into hashmap to get block to be added to
+	// each BlockchainNode stores backpointers to previous block;
+	// think going up from leaves in a tree
+	for _, transaction := range b.Transactions {
+		for _, curr_input := range transaction.Inputs {
+			// for every input that referenced an output,
+			// delete that input
+			// the key in the map is the hash-index
+			// MkTXOLoc, Prs
+			for locator, utxo := range prev_node.utxo {
+				if !utxo.IsUnlckd((curr_input.UnlockingScript)) {
+					new_utxo[locator] = utxo //adds unused utxo with previous locator as key
+				}
+			}
+		}
+	}
+
+	// at this point, new_utxo contains all unused utxo
+	// after taking into account all the new transaction inputs
+	// from the new block
+
+	for _, transaction := range b.Transactions {
+		for idx, curr_output := range transaction.Outputs {
+			for _, curr_input := range transaction.Inputs {
+				//check if block's outputs are UTXOs
+				if !curr_output.IsUnlckd(curr_input.UnlockingScript) {
+					//add UTXO to new map with locator as key
+					new_utxo[txo.MkTXOLoc(curr_output.Hash(), uint32(idx))] = curr_output
+				}
+			}
+		}
+	}
+
+	// new_utxo contains all UTXOs from all preceding blocks in chain
+	// as well as UTXOs in the new block
+
+	// create new node with relevant fields
+	new_node := BlockchainNode{
+		b,
+		prev_node,
+		new_utxo,
+		prev_node.depth + 1,
+	}
+
+	// add address of new node to map of BlockchainNodes
+	// with key being
+	bc.blocks[b.NameTag()] = &new_node
+
+	bc.Unlock()
 }
 
 // Length returns the count of blocks on the
@@ -108,7 +160,6 @@ func (bc *Blockchain) Length() int {
 	defer bc.Unlock()
 	return bc.LastBlock.depth + 1
 }
-
 
 // Get returns the blocks that corresponds to a
 // particular inputted hash
@@ -139,7 +190,6 @@ func (bc *Blockchain) IndexOf(hash string) int {
 	return bc.blocks[hash].depth
 }
 
-
 // GetLastBlock is a getter for LastBlock
 // Returns:
 // *block.Block the last block of the main chain.
@@ -148,7 +198,6 @@ func (bc *Blockchain) GetLastBlock() *block.Block {
 	defer bc.Unlock()
 	return bc.LastBlock.Block
 }
-
 
 // List returns all blocks on the main chain in order.
 // Returns:
@@ -164,7 +213,6 @@ func (bc *Blockchain) List() []*block.Block {
 	}
 	return slice
 }
-
 
 // Slice returns a slice of the main chain from a certain
 // starting index to an ending index (exclusive).
@@ -191,7 +239,6 @@ func (bc *Blockchain) Slice(s int, e int) []*block.Block {
 	return slice
 }
 
-
 // IsEndMainChain checks whether a new block would
 // be appended to the end of the current chain.
 // Inputs:
@@ -204,8 +251,6 @@ func (bc *Blockchain) IsEndMainChain(blk *block.Block) bool {
 	return bc.LastBlock.Block.Hash() == blk.Hdr.PrvBlkHsh
 }
 
-
-
 func (bc *Blockchain) GetUTXO(txi *txi.TransactionInput) *txo.TransactionOutput {
 	bc.Lock()
 	defer bc.Unlock()
@@ -213,8 +258,6 @@ func (bc *Blockchain) GetUTXO(txi *txi.TransactionInput) *txo.TransactionOutput 
 	utxo, _ := bc.LastBlock.utxo[key]
 	return utxo
 }
-
-
 
 func (bc *Blockchain) GetUTXOLen(pk string) int {
 	bc.Lock()
@@ -318,6 +361,16 @@ type UTXOInfo struct {
 // bc.Lock()
 // bc.Unlock()
 func (bc *Blockchain) GetUTXOForAmt(amt uint32, pubKey string) ([]*UTXOInfo, uint32, bool) {
+	bc.Lock()
+	defer bc.Unlock()
+	//prev_utxo := bc.LastBlock.utxo
+
+	//if val, ok := prev_utxo[t_hash] {
+	//	for _, curr_utxo:= range prev_utxo {
+	//
+	//	}
+	//}
+
 	return nil, 0, false
 }
 

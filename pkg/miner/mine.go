@@ -3,8 +3,11 @@ package miner
 import (
 	"BrunoCoin/pkg/block"
 	"BrunoCoin/pkg/block/tx"
+	"BrunoCoin/pkg/proto"
 	"BrunoCoin/pkg/utils"
 	"context"
+	"encoding/hex"
+	"math"
 )
 
 /*
@@ -105,6 +108,26 @@ func (m *Miner) DifTrg() string {
 // t.SumInputs()
 // t.SumOutputs()
 func (m *Miner) GenCBTx(txs []*tx.Transaction) *tx.Transaction {
-	return nil
-}
+	// ignore the fact that we need to check for the TimeLock
+	// calculate the total fees from all the transactions
+	var total_fees uint32 = 0
+	// fees are the difference between output and input values on Txs
+	for _, curr_transaction := range txs {
+		total_fees += curr_transaction.SumOutputs() - curr_transaction.SumInputs()
+	}
 
+	// compute minting reward
+	numHlvngs := uint32(math.Floor(math.Pow(0.5, float64(m.ChnLen.Load()/m.Conf.SubsdyHlvRt))) * float64(m.Conf.InitSubsdy))
+	if numHlvngs > m.Conf.MxHlvgs {
+		numHlvngs = m.Conf.MxHlvgs
+	}
+	mintingReward := numHlvngs * m.Conf.InitSubsdy
+
+	totalReward := mintingReward + total_fees
+
+	CBTOutput := []*proto.TransactionOutput{proto.NewTxOutpt(totalReward, hex.EncodeToString(m.Id.GetPublicKeyBytes()))}
+
+	ptrCBT := proto.NewTx(m.Conf.Ver, nil, CBTOutput, m.Conf.DefLckTm)
+
+	return tx.Deserialize(ptrCBT)
+}
