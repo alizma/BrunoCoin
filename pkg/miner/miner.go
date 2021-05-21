@@ -112,7 +112,11 @@ func (m *Miner) HndlBlk(b *block.Block) {
 // m.TxP.ChkTxs(...)
 // m.PoolUpdated <- ...
 func (m *Miner) HndlChkBlk(b *block.Block) {
-
+	m.TxP.ChkTxs(b.Transactions)
+	_, ok := <-m.PoolUpdated
+	if ok {
+		m.PoolUpdated <- true
+	}
 }
 
 // HndlTx (HandleTransaction) handles a validated transaction from the network. If the transaction is not an orphan, it
