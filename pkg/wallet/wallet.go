@@ -5,6 +5,9 @@ import (
 	"BrunoCoin/pkg/block/tx"
 	"BrunoCoin/pkg/blockchain"
 	"BrunoCoin/pkg/id"
+	"BrunoCoin/pkg/proto"
+	"BrunoCoin/pkg/utils"
+	"encoding/hex"
 	"sync"
 )
 
@@ -58,7 +61,6 @@ type Wallet struct {
 	mutex sync.Mutex
 }
 
-
 // SetAddr (SetAddress) sets the address
 // of the node in the wallet.
 func (w *Wallet) SetAddr(a string) {
@@ -66,7 +68,6 @@ func (w *Wallet) SetAddr(a string) {
 	w.Addr = a
 	w.mutex.Unlock()
 }
-
 
 // New creates a wallet object.
 // Inputs:
@@ -173,5 +174,32 @@ func (w *Wallet) HndlBlk(b *block.Block) {
 // proto.NewTxInpt(...)
 // proto.NewTxOutpt(...)
 func (w *Wallet) HndlTxReq(txR *TxReq) {
-	return
+	UTXOinfos, change, enoughUTXO := w.Chain.GetUTXOForAmt(txR.Amt, hex.EncodeToString(txR.PubK))
+
+	if UTXOinfos == nil {
+		return
+	}
+
+	if !enoughUTXO {
+		return
+	}
+
+	txInputs := make([]*proto.TransactionInput, len(UTXOinfos))
+	for _, currUTXOInfo := range UTXOinfos {
+		unlckscrpt, _ := currUTXOInfo.UTXO.MkSig(w.Id)
+		txInputs = append(txInputs, proto.NewTxInpt(currUTXOInfo.TxHsh, currUTXOInfo.OutIdx, unlckscrpt, currUTXOInfo.Amt))
+	}
+
+	txOutputs := make([]*proto.TransactionOutput, 0)
+	if change != 0 {
+		txOutputs = append(txOutputs, proto.NewTxOutpt(change, hex.EncodeToString((w.Id.GetPublicKeyBytes()))))
+	}
+	txOutputs = append(txOutputs, proto.NewTxOutpt(txR.Amt, hex.EncodeToString(txR.PubK)))
+
+	newTx := tx.Deserialize(proto.NewTx(w.Conf.TxVer, txInputs, txOutputs, w.Conf.DefLckTm))
+
+	w.LmnlTxs.Add(newTx)
+	w.SendTx <- newTx
+
+	utils.Debug.Printf("Address {%v} created transaction {%v}", utils.FmtAddr(w.Addr), newTx.NameTag())
 }
