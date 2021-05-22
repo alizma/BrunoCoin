@@ -116,6 +116,7 @@ func (tp *TxPool) Add(t *tx.Transaction) {
 		if tp.Length() < tp.Cap {
 			tp.CurPri.Add(CalcPri(t))
 			tp.Ct.Add(1)
+			tp.TxQ.Add(CalcPri(t), t)
 		}
 	}
 }

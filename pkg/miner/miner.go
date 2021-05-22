@@ -97,8 +97,9 @@ func (m *Miner) StartMiner() {
 // m.IncChnLen()
 // m.HndlChkBlk(...)
 func (m *Miner) HndlBlk(b *block.Block) {
-
-	return
+	m.SetHash(b.Hdr.PrvBlkHsh)
+	m.IncChnLen()
+	m.HndlChkBlk(b)
 }
 
 // HndlChkBlk (HandleCheckBlock) handles updating
