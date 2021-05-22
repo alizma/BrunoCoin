@@ -12,7 +12,6 @@ import (
  *
  */
 
-
 // ChkBlk (CheckBlock) validates a block based on multiple
 // conditions.
 // To be valid:
@@ -48,9 +47,11 @@ import (
 // b.Sz()
 // n.Chain.ChkChainsUTXO(...)
 func (n *Node) ChkBlk(b *block.Block) bool {
-	return false
+	return b.Transactions[0].IsCoinbase() &&
+		b.SatisfiesPOW(b.Hdr.DiffTarg) &&
+		b.Sz() <= n.Conf.MxBlkSz &&
+		n.Chain.ChkChainsUTXO(b.Transactions, b.Hdr.PrvBlkHsh)
 }
-
 
 // ChkTx (CheckTransaction) validates a transaction.
 // Inputs:
@@ -84,5 +85,9 @@ func (n *Node) ChkBlk(b *block.Block) bool {
 // t.SumInputs()
 // t.SumOutputs()
 func (n *Node) ChkTx(t *tx.Transaction) bool {
-	return false
+
+	return len(t.Inputs) > 0 && len(t.Outputs) > 0 &&
+		t.SumOutputs() > 0 &&
+		t.SumInputs() > t.SumOutputs()
+
 }

@@ -363,7 +363,7 @@ type UTXOInfo struct {
 func (bc *Blockchain) GetUTXOForAmt(amt uint32, pubKey string) ([]*UTXOInfo, uint32, bool) {
 	bc.Lock()
 	defer bc.Unlock()
-	//prev_utxo := bc.LastBlock.utxo
+	// prev_utxo := bc.LastBlock.utxo
 
 	//if val, ok := prev_utxo[t_hash] {
 	//	for _, curr_utxo:= range prev_utxo {
