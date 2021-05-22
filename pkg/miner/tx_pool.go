@@ -112,9 +112,11 @@ func (tp *TxPool) Add(t *tx.Transaction) {
 	tp.mutex.Lock()
 	defer tp.mutex.Unlock()
 
-	if tp.Length() < tp.Cap {
-		tp.CurPri.Add(CalcPri(t))
-		tp.Ct.Add(1)
+	if t != nil {
+		if tp.Length() < tp.Cap {
+			tp.CurPri.Add(CalcPri(t))
+			tp.Ct.Add(1)
+		}
 	}
 }
 
