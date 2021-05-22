@@ -24,9 +24,9 @@ import (
 // having blocks removed from the TxQ, sent out
 // again, and added back with a priority of 0.
 type LiminalTxs struct {
-	TxQ          	*tx.Heap
-	TxRplyThresh 	uint32
-	mutex			sync.Mutex
+	TxQ          *tx.Heap
+	TxRplyThresh uint32
+	mutex        sync.Mutex
 }
 
 // NewLmnlTxs (NewLiminalTransactions) returns
@@ -73,7 +73,6 @@ func (l *LiminalTxs) ChkTxs(txs []*tx.Transaction) ([]*tx.Transaction, []*tx.Tra
 	return nil, nil
 }
 
-
 // Add adds a transaction to the liminal transactions.
 // It is basically a wrapper around the heap add. The
 // priority is 0, since the transaction was just made
@@ -90,5 +89,8 @@ func (l *LiminalTxs) ChkTxs(txs []*tx.Transaction) ([]*tx.Transaction, []*tx.Tra
 // l.mutex.Unlock()
 // l.TxQ.Add(...)
 func (l *LiminalTxs) Add(t *tx.Transaction) {
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
+	l.TxQ.Add(0, t)
 	return
 }
