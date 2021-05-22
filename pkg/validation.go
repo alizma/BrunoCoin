@@ -85,7 +85,22 @@ func (n *Node) ChkBlk(b *block.Block) bool {
 // t.SumInputs()
 // t.SumOutputs()
 func (n *Node) ChkTx(t *tx.Transaction) bool {
+	//double_spent := make([]*txo.TransactionOutput, len(t.Inputs))
+	for _, curr_input := range t.Inputs {
+		if n.Chain.IsInvalidInput(curr_input) {
+			return false
+		}
 
+		corr_utxo := n.Chain.GetUTXO(curr_input)
+		/*
+			if _, ok := n.Chain.LastBlock.utxo[n.Chain.GetUTXO(curr_input).Hash()]; ok {
+
+			}
+		*/
+		if !corr_utxo.IsUnlckd(curr_input.UnlockingScript) {
+			return false
+		}
+	}
 	return len(t.Inputs) > 0 && len(t.Outputs) > 0 &&
 		t.SumOutputs() > 0 &&
 		t.SumInputs() > t.SumOutputs()
