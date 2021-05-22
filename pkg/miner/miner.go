@@ -134,7 +134,12 @@ func (m *Miner) HndlChkBlk(b *block.Block) {
 // m.TxP.Add(...)
 // m.PoolUpdated <- ...
 func (m *Miner) HndlTx(t *tx.Transaction) {
-	return
+	if t != nil {
+		m.TxP.Add(t)
+		if m.Active.Load() {
+			m.PoolUpdated <- true
+		}
+	}
 }
 
 // SetChnLen (SetChainLength) sets the miner's perspective of the length of the main chain.

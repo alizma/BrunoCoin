@@ -109,7 +109,13 @@ func CalcPri(t *tx.Transaction) uint32 {
 // tp.mutex.Lock()
 // tp.mutex.Unlock()
 func (tp *TxPool) Add(t *tx.Transaction) {
-	return
+	tp.mutex.Lock()
+	defer tp.mutex.Unlock()
+
+	if tp.Length() < tp.Cap {
+		tp.CurPri.Add(CalcPri(t))
+		tp.Ct.Add(1)
+	}
 }
 
 // ChkTxs (CheckTransactions) checks for any duplicate
