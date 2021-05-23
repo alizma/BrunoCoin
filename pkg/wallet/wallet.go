@@ -123,7 +123,19 @@ func New(c *Config, id id.ID, chain *blockchain.Blockchain) *Wallet {
 // t.NameTag()
 // w.SendTx <- ...
 func (w *Wallet) HndlBlk(b *block.Block) {
-	return
+	priAbove, _ := w.LmnlTxs.ChkTxs(b.Transactions)
+
+	if priAbove == nil {
+		return
+	}
+
+	for _, transaction := range priAbove {
+		transaction.LockTime += 1
+		w.SendTx <- transaction
+		w.LmnlTxs.Add(transaction)
+
+		utils.Debug.Printf("Address {%v} resent transaction {%v}", utils.FmtAddr(w.Addr), transaction.NameTag())
+	}
 }
 
 // HndlTxReq (HandleTransactionRequest) attempts to
