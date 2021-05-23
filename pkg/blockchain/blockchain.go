@@ -363,15 +363,33 @@ type UTXOInfo struct {
 func (bc *Blockchain) GetUTXOForAmt(amt uint32, pubKey string) ([]*UTXOInfo, uint32, bool) {
 	bc.Lock()
 	defer bc.Unlock()
-	// prev_utxo := bc.LastBlock.utxo
+	prev_utxo := bc.LastBlock.utxo
+	targetAmt := amt
 
-	//if val, ok := prev_utxo[t_hash] {
-	//	for _, curr_utxo:= range prev_utxo {
-	//
-	//	}
-	//}
+	UTXOInfos := make([]*UTXOInfo, 0)
+	for UTXOLocator, UTXO := range prev_utxo {
+		tHash, idx := txo.PrsTXOLoc(UTXOLocator)
+		if targetAmt > 0 {
+			newUTXOInfo := &UTXOInfo{
+				TxHsh:  tHash,
+				OutIdx: idx,
+				UTXO:   UTXO,
+				Amt:    UTXO.Amount,
+			}
 
-	return nil, 0, false
+			UTXOInfos = append(UTXOInfos, newUTXOInfo)
+			targetAmt -= UTXO.Amount
+		}
+
+		if targetAmt <= 0 {
+			break
+		}
+	}
+
+	if targetAmt > 0 {
+		return nil, 0, false
+	}
+	return UTXOInfos, -targetAmt, true
 }
 
 // GenesisBlock creates the genesis block from
