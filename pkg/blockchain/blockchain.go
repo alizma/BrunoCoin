@@ -6,6 +6,7 @@ import (
 	"BrunoCoin/pkg/block/tx/txi"
 	"BrunoCoin/pkg/block/tx/txo"
 	"BrunoCoin/pkg/proto"
+	"BrunoCoin/pkg/utils"
 	"fmt"
 	"strings"
 	"sync"
@@ -97,47 +98,37 @@ func (bc *Blockchain) SetAddr(a string) {
 // txo.MkTXOLoc(...)
 func (bc *Blockchain) Add(b *block.Block) {
 	bc.Lock()
+	defer bc.Lock()
 	prev_node := bc.LastBlock //of type *BlockchainNode
 	new_utxo := make(map[string]*txo.TransactionOutput)
 
-	// put id into hashmap to get block to be added to
-	// each BlockchainNode stores backpointers to previous block;
-	// think going up from leaves in a tree
+	// Make a copy of the original UTXOs
+	for loc, curr_utxo := range prev_node.utxo {
+		new_utxo[loc] = curr_utxo
+	}
+
+	// Remove all used UTXOs
 	for _, transaction := range b.Transactions {
 		for _, curr_input := range transaction.Inputs {
-			// for every input that referenced an output,
-			// delete that input
-			// the key in the map is the hash-index
-			// MkTXOLoc, Prs
-			for locator, utxo := range prev_node.utxo {
-				if !utxo.IsUnlckd((curr_input.UnlockingScript)) {
-					new_utxo[locator] = utxo //adds unused utxo with previous locator as key
-				}
-			}
+			locator := txo.MkTXOLoc(curr_input.TransactionHash, curr_input.OutputIndex)
+
+			delete(new_utxo, locator)
 		}
 	}
 
-	// at this point, new_utxo contains all unused utxo
-	// after taking into account all the new transaction inputs
-	// from the new block
-
-	for _, transaction := range b.Transactions {
-		for idx, curr_output := range transaction.Outputs {
-			for _, curr_input := range transaction.Inputs {
-				//check if block's outputs are UTXOs
-				if !curr_output.IsUnlckd(curr_input.UnlockingScript) {
-					//add UTXO to new map with locator as key
-					new_utxo[txo.MkTXOLoc(curr_output.Hash(), uint32(idx))] = curr_output
-				}
-			}
+	// Add new UTXOs from block
+	for _, currTX := range b.Transactions {
+		for idx, currUTXO := range currTX.Outputs {
+			locator := txo.MkTXOLoc(currUTXO.Hash(), uint32(idx))
+			new_utxo[locator] = currUTXO
 		}
 	}
 
-	// new_utxo contains all UTXOs from all preceding blocks in chain
+	// new_utxo contains filtered UTXOs from all preceding blocks in chain
 	// as well as UTXOs in the new block
 
 	// create new node with relevant fields
-	new_node := BlockchainNode{
+	newNode := &BlockchainNode{
 		b,
 		prev_node,
 		new_utxo,
@@ -146,9 +137,10 @@ func (bc *Blockchain) Add(b *block.Block) {
 
 	// add address of new node to map of BlockchainNodes
 	// with key being
-	bc.blocks[b.NameTag()] = &new_node
+	bc.LastBlock = newNode
+	bc.blocks[newNode.Hash()] = newNode
 
-	bc.Unlock()
+	utils.Debug.Printf("Address {%v} added block {%v}", utils.FmtAddr(bc.Addr), b.NameTag())
 }
 
 // Length returns the count of blocks on the
