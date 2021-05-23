@@ -86,20 +86,34 @@ func (n *Node) ChkBlk(b *block.Block) bool {
 // t.SumOutputs()
 func (n *Node) ChkTx(t *tx.Transaction) bool {
 	//double_spent := make([]*txo.TransactionOutput, len(t.Inputs))
-	for _, curr_input := range t.Inputs {
-		if n.Chain.IsInvalidInput(curr_input) {
+	for _, currInput := range t.Inputs {
+		if n.Chain.IsInvalidInput(currInput) {
 			return false
 		}
 
-		corr_utxo := n.Chain.GetUTXO(curr_input)
+		// returns the *txo.TransactionOutput if corresponding
+		// utxo exists; else returns nil/0 because searching by key
+		// in a map on the blockchain
+		corrUTXO := n.Chain.GetUTXO(currInput)
+
+		if corrUTXO == nil {
+			return false
+		}
+
+		//for idx, tx := range n.Mnr.TxP.ChkTxs(make([]*tx.Transaction))
+
 		/*
-			if _, ok := n.Chain.LastBlock.utxo[n.Chain.GetUTXO(curr_input).Hash()]; ok {
+			if corrUTXO
+
+			if _, ok := n.Chain.LastBlock.getUTXOSet()[n.Chain.GetUTXO(curr_input).Hash()]; ok {
 
 			}
 		*/
-		if !corr_utxo.IsUnlckd(curr_input.UnlockingScript) {
-			return false
-		}
+		/*
+			if !corr_utxo.IsUnlckd(curr_input.UnlockingScript) {
+				return false
+			}
+		*/
 	}
 	return len(t.Inputs) > 0 && len(t.Outputs) > 0 &&
 		t.SumOutputs() > 0 &&

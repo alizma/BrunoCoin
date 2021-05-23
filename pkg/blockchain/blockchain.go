@@ -28,6 +28,16 @@ type BlockchainNode struct {
 	depth    int
 }
 
+// Getter method for returning the private utxo field for a given BlockchainNode
+func (bn *BlockchainNode) getUTXOSet() map[string]*txo.TransactionOutput {
+	utxoCpy := make(map[string]*txo.TransactionOutput)
+	for key, val := range bn.utxo {
+		utxoCpy[key] = val
+	}
+
+	return utxoCpy
+}
+
 // Blockchain not only stores the main blockchain, but
 // it actually stores all forked blockchains in a tree
 // like structure using a map.
