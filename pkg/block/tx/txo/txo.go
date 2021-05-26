@@ -68,6 +68,8 @@ func (o *TransactionOutput) IsUnlckd(sig string) bool {
 			"decode properly.\n", sig)
 		return false
 	}
+	//utils.Debug.Printf("pk: %v, hash: %v, sig: %v", pk, h, sigB)
+
 	return ecdsa.VerifyASN1(pk, h, sigB)
 }
 

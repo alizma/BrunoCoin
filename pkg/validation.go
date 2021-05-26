@@ -3,6 +3,7 @@ package pkg
 import (
 	"BrunoCoin/pkg/block"
 	"BrunoCoin/pkg/block/tx"
+	"BrunoCoin/pkg/utils"
 )
 
 /*
@@ -47,10 +48,20 @@ import (
 // b.Sz()
 // n.Chain.ChkChainsUTXO(...)
 func (n *Node) ChkBlk(b *block.Block) bool {
+	if !b.Transactions[0].IsCoinbase() {
+		utils.Debug.Printf("is not coinbase")
+	} else if !b.SatisfiesPOW(b.Hdr.DiffTarg) {
+		utils.Debug.Printf("does not satisfy difficulty target")
+	} else if !(b.Sz() <= n.Conf.MxBlkSz) {
+		utils.Debug.Printf("does not satisfy block size")
+	} else if !n.Chain.ChkChainsUTXO(b.Transactions[1:], b.Hdr.PrvBlkHsh) {
+		utils.Debug.Printf("fails chain check")
+	}
+
 	return b.Transactions[0].IsCoinbase() &&
 		b.SatisfiesPOW(b.Hdr.DiffTarg) &&
 		b.Sz() <= n.Conf.MxBlkSz &&
-		n.Chain.ChkChainsUTXO(b.Transactions, b.Hdr.PrvBlkHsh)
+		n.Chain.ChkChainsUTXO(b.Transactions[1:], b.Hdr.PrvBlkHsh)
 }
 
 // ChkTx (CheckTransaction) validates a transaction.
@@ -85,38 +96,37 @@ func (n *Node) ChkBlk(b *block.Block) bool {
 // t.SumInputs()
 // t.SumOutputs()
 func (n *Node) ChkTx(t *tx.Transaction) bool {
-	//double_spent := make([]*txo.TransactionOutput, len(t.Inputs))
+	if t.Sz() > n.Conf.MxBlkSz {
+		utils.Debug.Printf("failed blocksize")
+		return false
+	}
+
+	if t.Inputs == nil || t.Outputs == nil || len(t.Outputs) <= 0 {
+		utils.Debug.Printf("failed input/output size: len inputs - %v, len outputs: %v", len(t.Inputs), len(t.Outputs))
+		return false
+	}
+
+	if t.SumOutputs() < uint32(0) {
+		utils.Debug.Printf("failed sumoutputs")
+		return false
+	}
+
+	if t.SumInputs() <= t.SumOutputs() {
+		utils.Debug.Printf("failed suminputs %v < sumoutputs %v", t.SumInputs(), t.SumOutputs())
+		return false
+	}
+
 	for _, currInput := range t.Inputs {
 		if n.Chain.IsInvalidInput(currInput) {
+			utils.Debug.Printf("is invalid input")
 			return false
 		}
 
-		// returns the *txo.TransactionOutput if corresponding
-		// utxo exists; else returns nil/0 because searching by key
-		// in a map on the blockchain
-		corrUTXO := n.Chain.GetUTXO(currInput)
-
-		if corrUTXO == nil {
+		if !n.Chain.GetUTXO(currInput).IsUnlckd(currInput.UnlockingScript) {
+			utils.Debug.Printf("%v failed unlocking", currInput)
 			return false
 		}
-
-		//for idx, tx := range n.Mnr.TxP.ChkTxs(make([]*tx.Transaction))
-
-		/*
-			if corrUTXO
-
-			if _, ok := n.Chain.LastBlock.getUTXOSet()[n.Chain.GetUTXO(curr_input).Hash()]; ok {
-
-			}
-		*/
-		/*
-			if !corr_utxo.IsUnlckd(curr_input.UnlockingScript) {
-				return false
-			}
-		*/
 	}
-	return len(t.Inputs) > 0 && len(t.Outputs) > 0 &&
-		t.SumOutputs() > 0 &&
-		t.SumInputs() > t.SumOutputs()
 
+	return true
 }

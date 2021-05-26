@@ -374,16 +374,23 @@ func (bc *Blockchain) GetUTXOForAmt(amt uint32, pubKey string) ([]*UTXOInfo, uin
 
 	UTXOInfos := make([]*UTXOInfo, 0)
 	for UTXOLocator, UTXO := range prev_utxo {
-		tHash, idx := txo.PrsTXOLoc(UTXOLocator)
-
-		newUTXOInfo := &UTXOInfo{
-			TxHsh:  tHash,
-			OutIdx: idx,
-			UTXO:   UTXO,
-			Amt:    UTXO.Amount,
+		if UTXO.Liminal {
+			continue
 		}
 
-		UTXOInfos = append(UTXOInfos, newUTXOInfo)
+		if UTXO.LockingScript == pubKey {
+			tHash, idx := txo.PrsTXOLoc(UTXOLocator)
+
+			newUTXOInfo := &UTXOInfo{
+				TxHsh:  tHash,
+				OutIdx: idx,
+				UTXO:   UTXO,
+				Amt:    UTXO.Amount,
+			}
+			bc.LastBlock.utxo[UTXOLocator].Liminal = true
+
+			UTXOInfos = append(UTXOInfos, newUTXOInfo)
+		}
 		//utils.Debug.Printf("added new UTXOINFO {%v} with amt {%v", newUTXOInfo.TxHsh, newUTXOInfo.Amt)
 
 		if UTXO.Amount >= targetAmt {

@@ -4,9 +4,9 @@ import (
 	"BrunoCoin/pkg/block"
 	"BrunoCoin/pkg/block/tx"
 	"BrunoCoin/pkg/proto"
+	"BrunoCoin/pkg/utils"
 	"context"
 	"encoding/hex"
-	"math"
 )
 
 /*
@@ -42,7 +42,7 @@ func (m *Miner) Mine() {
 			result := m.CalcNonce(ctx, b)
 			m.Mining.Store(false)
 			if result {
-				//utils.Debug.Printf("%v mined %v %v", utils.FmtAddr(m.Addr), b.NameTag(), b.Summarize())
+				utils.Debug.Printf("%v mined %v %v", utils.FmtAddr(m.Addr), b.NameTag(), b.Summarize())
 				m.SendBlk <- b
 				m.HndlBlk(b)
 			}
@@ -113,20 +113,26 @@ func (m *Miner) GenCBTx(txs []*tx.Transaction) *tx.Transaction {
 	// calculate the total fees from all the transactions
 	var total_fees uint32 = 0
 	// fees are the difference between output and input values on Txs
+
 	for _, curr_transaction := range txs {
-		total_fees += curr_transaction.SumOutputs() - curr_transaction.SumInputs()
+		total_fees += curr_transaction.SumInputs() - curr_transaction.SumOutputs()
 	}
 
-	// compute minting reward
-	numHlvngs := uint32(math.Floor(math.Pow(0.5, float64(m.ChnLen.Load()/m.Conf.SubsdyHlvRt))) * float64(m.Conf.InitSubsdy))
-	if numHlvngs > m.Conf.MxHlvgs {
-		numHlvngs = m.Conf.MxHlvgs
+	mintingReward := uint32(0)
+
+	if chnLen := m.ChnLen.Load(); chnLen < m.Conf.SubsdyHlvRt*m.Conf.MxHlvgs {
+		mintingReward += m.Conf.InitSubsdy / (chnLen/m.Conf.SubsdyHlvRt + 1)
 	}
-	mintingReward := numHlvngs * m.Conf.InitSubsdy
 
-	totalReward := mintingReward + total_fees
+	/*
+		// compute minting reward
+		numHlvngs := uint32(math.Floor(math.Pow(0.5, float64(m.ChnLen.Load()/m.Conf.SubsdyHlvRt))))
+		if numHlvngs > m.Conf.MxHlvgs {
+			numHlvngs = m.Conf.MxHlvgs
+		}
+	*/
 
-	CBTOutput := []*proto.TransactionOutput{proto.NewTxOutpt(totalReward, hex.EncodeToString(m.Id.GetPublicKeyBytes()))}
+	CBTOutput := []*proto.TransactionOutput{proto.NewTxOutpt(total_fees+mintingReward, hex.EncodeToString(m.Id.GetPublicKeyBytes()))}
 
 	ptrCBT := proto.NewTx(m.Conf.Ver, nil, CBTOutput, m.Conf.DefLckTm)
 

@@ -199,13 +199,17 @@ func (w *Wallet) HndlTxReq(txR *TxReq) {
 	txInputs := make([]*proto.TransactionInput, 0)
 	//utils.Debug.Printf("txInputs: %v", txInputs)
 	for _, currUTXOInfo := range UTXOinfos {
-		unlckscrpt, _ := currUTXOInfo.UTXO.MkSig(w.Id)
+		unlckscrpt, err := currUTXOInfo.UTXO.MkSig(w.Id)
+		if err != nil {
+			return
+		}
+
 		txInputs = append(txInputs, proto.NewTxInpt(currUTXOInfo.TxHsh, currUTXOInfo.OutIdx, unlckscrpt, currUTXOInfo.Amt))
 		//utils.Debug.Printf("txInputs: %v", txInputs)
 	}
 
 	txOutputs := make([]*proto.TransactionOutput, 0)
-	if change != 0 {
+	if change > 0 {
 		txOutputs = append(txOutputs, proto.NewTxOutpt(change, hex.EncodeToString((w.Id.GetPublicKeyBytes()))))
 	}
 	txOutputs = append(txOutputs, proto.NewTxOutpt(txR.Amt, hex.EncodeToString(txR.PubK)))
