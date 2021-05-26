@@ -4,7 +4,6 @@ import (
 	"BrunoCoin/pkg/block"
 	"BrunoCoin/pkg/block/tx"
 	"BrunoCoin/pkg/proto"
-	"BrunoCoin/pkg/utils"
 	"context"
 	"encoding/hex"
 	"math"
@@ -32,16 +31,18 @@ func (m *Miner) Mine() {
 		ctx, cancel = context.WithCancel(context.Background())
 		go func(ctx context.Context) {
 			if !m.TxP.PriMet() {
+				//utils.Debug.Printf("current priority: %v, PriLim: %v", m.TxP.CurPri.Load(), m.TxP.PriLim)
 				return
 			}
 			m.Mining.Store(true)
 			m.MiningPool = m.NewMiningPool()
 			txs := append([]*tx.Transaction{m.GenCBTx(m.MiningPool)}, m.MiningPool...)
 			b := block.New(m.PrvHsh, txs, m.DifTrg())
+			//utils.Debug.Printf("new block %v", b.NameTag())
 			result := m.CalcNonce(ctx, b)
 			m.Mining.Store(false)
 			if result {
-				utils.Debug.Printf("%v mined %v %v", utils.FmtAddr(m.Addr), b.NameTag(), b.Summarize())
+				//utils.Debug.Printf("%v mined %v %v", utils.FmtAddr(m.Addr), b.NameTag(), b.Summarize())
 				m.SendBlk <- b
 				m.HndlBlk(b)
 			}
@@ -128,6 +129,8 @@ func (m *Miner) GenCBTx(txs []*tx.Transaction) *tx.Transaction {
 	CBTOutput := []*proto.TransactionOutput{proto.NewTxOutpt(totalReward, hex.EncodeToString(m.Id.GetPublicKeyBytes()))}
 
 	ptrCBT := proto.NewTx(m.Conf.Ver, nil, CBTOutput, m.Conf.DefLckTm)
+
+	//utils.Debug.Printf("new transaction %v", ptrCBT.Version)
 
 	return tx.Deserialize(ptrCBT)
 }

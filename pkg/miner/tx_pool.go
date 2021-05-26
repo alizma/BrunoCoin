@@ -79,7 +79,8 @@ func CalcPri(t *tx.Transaction) uint32 {
 		return 1
 	}
 
-	pri := (t.SumOutputs() - t.SumInputs()) * 100 / t.Sz()
+	pri := (t.SumInputs() - t.SumOutputs()) * 100.0 / t.Sz()
+	//utils.Debug.Printf("pri: %v", pri)
 
 	if pri == 0 {
 		return 1
@@ -112,12 +113,10 @@ func (tp *TxPool) Add(t *tx.Transaction) {
 	tp.mutex.Lock()
 	defer tp.mutex.Unlock()
 
-	if t != nil {
-		if tp.Length() < tp.Cap {
-			tp.CurPri.Add(CalcPri(t))
-			tp.Ct.Add(1)
-			tp.TxQ.Add(CalcPri(t), t)
-		}
+	if t != nil && tp.Length() < tp.Cap {
+		tp.CurPri.Add(CalcPri(t))
+		tp.Ct.Add(1)
+		tp.TxQ.Add(CalcPri(t), t)
 	}
 }
 
@@ -143,9 +142,9 @@ func (tp *TxPool) ChkTxs(remover []*tx.Transaction) {
 
 	removed := tp.TxQ.Rmv(remover)
 	if removed != nil {
-		tp.Ct.Add(-uint32(len(removed)))
+		tp.Ct.Sub(uint32(len(removed)))
 		for _, curr_removed_transaction := range removed {
-			tp.CurPri.Add(-CalcPri(curr_removed_transaction))
+			tp.CurPri.Sub(CalcPri(curr_removed_transaction))
 		}
 	}
 }

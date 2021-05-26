@@ -14,11 +14,12 @@ import (
 	"BrunoCoin/pkg/wallet"
 	"errors"
 	"fmt"
-	"google.golang.org/grpc"
 	"net"
 	"os"
 	"sync"
 	"time"
+
+	"google.golang.org/grpc"
 )
 
 /*
@@ -334,6 +335,7 @@ func (n *Node) Bootstrap() error {
 		n.BlockMapMutex.Unlock()
 		n.Chain.Add(b)
 		if chkOrf {
+			utils.Debug.Printf("added block with name %v", b.NameTag())
 			n.Mnr.HndlChkBlk(b)
 		}
 	}

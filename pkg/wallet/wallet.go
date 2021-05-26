@@ -186,20 +186,22 @@ func (w *Wallet) HndlBlk(b *block.Block) {
 // proto.NewTxInpt(...)
 // proto.NewTxOutpt(...)
 func (w *Wallet) HndlTxReq(txR *TxReq) {
-	UTXOinfos, change, enoughUTXO := w.Chain.GetUTXOForAmt(txR.Amt, hex.EncodeToString(txR.PubK))
+	UTXOinfos, change, enoughUTXO := w.Chain.GetUTXOForAmt(txR.Amt+txR.Fee, hex.EncodeToString(txR.PubK))
 
-	if UTXOinfos == nil {
-		return
-	}
+	//utils.Debug.Printf("Address {%v} got UTXOINFOs", utils.FmtAddr(w.Addr))
+
+	//utils.Debug.Printf("FAILED, UTXOinfos: %v, enoughUTXO: %v", UTXOinfos, enoughUTXO)
 
 	if !enoughUTXO {
 		return
 	}
 
-	txInputs := make([]*proto.TransactionInput, len(UTXOinfos))
+	txInputs := make([]*proto.TransactionInput, 0)
+	//utils.Debug.Printf("txInputs: %v", txInputs)
 	for _, currUTXOInfo := range UTXOinfos {
 		unlckscrpt, _ := currUTXOInfo.UTXO.MkSig(w.Id)
 		txInputs = append(txInputs, proto.NewTxInpt(currUTXOInfo.TxHsh, currUTXOInfo.OutIdx, unlckscrpt, currUTXOInfo.Amt))
+		//utils.Debug.Printf("txInputs: %v", txInputs)
 	}
 
 	txOutputs := make([]*proto.TransactionOutput, 0)
@@ -208,10 +210,12 @@ func (w *Wallet) HndlTxReq(txR *TxReq) {
 	}
 	txOutputs = append(txOutputs, proto.NewTxOutpt(txR.Amt, hex.EncodeToString(txR.PubK)))
 
+	//utils.Debug.Printf("txInputs: %v", txInputs)
 	newTx := tx.Deserialize(proto.NewTx(w.Conf.TxVer, txInputs, txOutputs, w.Conf.DefLckTm))
 
+	//utils.Debug.Printf("newTx: %v", newTx)
 	w.LmnlTxs.Add(newTx)
 	w.SendTx <- newTx
 
-	utils.Debug.Printf("Address {%v} created transaction {%v}", utils.FmtAddr(w.Addr), newTx.NameTag())
+	//utils.Debug.Printf("Address {%v} created transaction {%v}", utils.FmtAddr(w.Addr), newTx.NameTag())
 }

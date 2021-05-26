@@ -114,8 +114,8 @@ func (m *Miner) HndlBlk(b *block.Block) {
 // m.PoolUpdated <- ...
 func (m *Miner) HndlChkBlk(b *block.Block) {
 	m.TxP.ChkTxs(b.Transactions)
-	_, ok := <-m.PoolUpdated
-	if ok {
+
+	if m.Active.Load() {
 		m.PoolUpdated <- true
 	}
 }
@@ -135,9 +135,11 @@ func (m *Miner) HndlChkBlk(b *block.Block) {
 // m.TxP.Add(...)
 // m.PoolUpdated <- ...
 func (m *Miner) HndlTx(t *tx.Transaction) {
+	//utils.Debug.Printf("transaction: %v", t)
 	if t != nil {
 		m.TxP.Add(t)
 		if m.Active.Load() {
+			//utils.Debug.Printf("active: %v", m.Active.Load())
 			m.PoolUpdated <- true
 		}
 	}

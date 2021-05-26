@@ -6,7 +6,8 @@ import (
 	"BrunoCoin/pkg/block/tx/txi"
 	"BrunoCoin/pkg/block/tx/txo"
 	"BrunoCoin/pkg/proto"
-	"BrunoCoin/pkg/utils"
+
+	//"BrunoCoin/pkg/utils"
 	"fmt"
 	"strings"
 	"sync"
@@ -108,7 +109,7 @@ func (bc *Blockchain) SetAddr(a string) {
 // txo.MkTXOLoc(...)
 func (bc *Blockchain) Add(b *block.Block) {
 	bc.Lock()
-	defer bc.Lock()
+
 	prev_node := bc.LastBlock //of type *BlockchainNode
 	new_utxo := make(map[string]*txo.TransactionOutput)
 
@@ -116,6 +117,8 @@ func (bc *Blockchain) Add(b *block.Block) {
 	for loc, curr_utxo := range prev_node.utxo {
 		new_utxo[loc] = curr_utxo
 	}
+
+	bc.Unlock()
 
 	// Remove all used UTXOs
 	for _, transaction := range b.Transactions {
@@ -144,13 +147,14 @@ func (bc *Blockchain) Add(b *block.Block) {
 		new_utxo,
 		prev_node.depth + 1,
 	}
-
+	bc.Lock()
 	// add address of new node to map of BlockchainNodes
 	// with key being
 	bc.LastBlock = newNode
 	bc.blocks[newNode.Hash()] = newNode
+	bc.Unlock()
 
-	utils.Debug.Printf("Address {%v} added block {%v}", utils.FmtAddr(bc.Addr), b.NameTag())
+	//utils.Debug.Printf("Address {%v} added block {%v}", utils.FmtAddr(bc.Addr), b.NameTag())
 }
 
 // Length returns the count of blocks on the
@@ -371,27 +375,25 @@ func (bc *Blockchain) GetUTXOForAmt(amt uint32, pubKey string) ([]*UTXOInfo, uin
 	UTXOInfos := make([]*UTXOInfo, 0)
 	for UTXOLocator, UTXO := range prev_utxo {
 		tHash, idx := txo.PrsTXOLoc(UTXOLocator)
-		if targetAmt > 0 {
-			newUTXOInfo := &UTXOInfo{
-				TxHsh:  tHash,
-				OutIdx: idx,
-				UTXO:   UTXO,
-				Amt:    UTXO.Amount,
-			}
 
-			UTXOInfos = append(UTXOInfos, newUTXOInfo)
-			targetAmt -= UTXO.Amount
+		newUTXOInfo := &UTXOInfo{
+			TxHsh:  tHash,
+			OutIdx: idx,
+			UTXO:   UTXO,
+			Amt:    UTXO.Amount,
 		}
 
-		if targetAmt <= 0 {
-			break
+		UTXOInfos = append(UTXOInfos, newUTXOInfo)
+		//utils.Debug.Printf("added new UTXOINFO {%v} with amt {%v", newUTXOInfo.TxHsh, newUTXOInfo.Amt)
+
+		if UTXO.Amount >= targetAmt {
+			return UTXOInfos, UTXO.Amount - targetAmt, true
 		}
+
+		targetAmt -= UTXO.Amount
 	}
 
-	if targetAmt > 0 {
-		return nil, 0, false
-	}
-	return UTXOInfos, -targetAmt, true
+	return nil, 0, false
 }
 
 // GenesisBlock creates the genesis block from
