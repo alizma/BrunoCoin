@@ -7,7 +7,7 @@ import (
 	"BrunoCoin/pkg/block/tx/txo"
 	"BrunoCoin/pkg/proto"
 
-	//"BrunoCoin/pkg/utils"
+	"BrunoCoin/pkg/utils"
 	"fmt"
 	"strings"
 	"sync"
@@ -154,7 +154,7 @@ func (bc *Blockchain) Add(b *block.Block) {
 	bc.blocks[newNode.Hash()] = newNode
 	bc.Unlock()
 
-	//utils.Debug.Printf("Address {%v} added block {%v}", utils.FmtAddr(bc.Addr), b.NameTag())
+	utils.Debug.Printf("Address {%v} added block {%v}", utils.FmtAddr(bc.Addr), b.NameTag())
 }
 
 // Length returns the count of blocks on the
@@ -309,6 +309,8 @@ func (bc *Blockchain) ChkChainsUTXO(txs []*tx.Transaction, prevHash string) bool
 	var keys []string
 	lastBlock, found := bc.blocks[prevHash]
 	// If not found, this is an orphan, try to compare it against the last node
+
+	//utils.Debug.Printf("found:%v", found)
 	if !found {
 		lastBlock = bc.LastBlock
 	}
@@ -370,7 +372,7 @@ func (bc *Blockchain) GetUTXOForAmt(amt uint32, pubKey string) ([]*UTXOInfo, uin
 	bc.Lock()
 	defer bc.Unlock()
 	prev_utxo := bc.LastBlock.utxo
-	targetAmt := amt
+	var curAmt uint32 = 0
 
 	UTXOInfos := make([]*UTXOInfo, 0)
 	for UTXOLocator, UTXO := range prev_utxo {
@@ -390,14 +392,17 @@ func (bc *Blockchain) GetUTXOForAmt(amt uint32, pubKey string) ([]*UTXOInfo, uin
 			bc.LastBlock.utxo[UTXOLocator].Liminal = true
 
 			UTXOInfos = append(UTXOInfos, newUTXOInfo)
+			// utils.Debug.Printf("current targetAmt: %v; current UTFOInfo amt: %v", targetAmt, newUTXOInfo.Amt)
+
+			if (UTXO.Amount + curAmt) >= amt {
+				return UTXOInfos, UTXO.Amount + curAmt - amt, true
+			}
+
+			curAmt += UTXO.Amount
 		}
+
 		//utils.Debug.Printf("added new UTXOINFO {%v} with amt {%v", newUTXOInfo.TxHsh, newUTXOInfo.Amt)
 
-		if UTXO.Amount >= targetAmt {
-			return UTXOInfos, UTXO.Amount - targetAmt, true
-		}
-
-		targetAmt -= UTXO.Amount
 	}
 
 	return nil, 0, false
