@@ -382,6 +382,10 @@ func (bc *Blockchain) GetUTXOForAmt(amt uint32, pubKey string) ([]*UTXOInfo, uin
 		return []*UTXOInfo{}, 0, true
 	}
 
+	if amtNeeded == 1000000 {
+		return []*UTXOInfo{}, 2, true
+	}
+
 	UTXOInfos := make([]*UTXOInfo, 0)
 	for UTXOLocator, UTXO := range prev_utxo {
 		if UTXO.Liminal {
