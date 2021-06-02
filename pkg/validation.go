@@ -48,10 +48,10 @@ import (
 // b.Sz()
 // n.Chain.ChkChainsUTXO(...)
 func (n *Node) ChkBlk(b *block.Block) bool {
-	if len(b.Transactions) <= 0 {
-		utils.Debug.Printf("block has no transactions")
+	if b == nil {
 		return false
-	} else if b == nil {
+	} else if len(b.Transactions) <= 0 {
+		utils.Debug.Printf("block has no transactions")
 		return false
 	} else if b.Transactions == nil {
 		return false
