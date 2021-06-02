@@ -141,7 +141,7 @@ func (tp *TxPool) ChkTxs(remover []*tx.Transaction) {
 	defer tp.mutex.Unlock()
 
 	removed := tp.TxQ.Rmv(remover)
-	if removed != nil {
+	if len(removed) != 0 {
 		tp.Ct.Sub(uint32(len(removed)))
 		for _, curr_removed_transaction := range removed {
 			tp.CurPri.Sub(CalcPri(curr_removed_transaction))

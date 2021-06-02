@@ -125,7 +125,7 @@ func New(c *Config, id id.ID, chain *blockchain.Blockchain) *Wallet {
 func (w *Wallet) HndlBlk(b *block.Block) {
 	priAbove, _ := w.LmnlTxs.ChkTxs(b.Transactions)
 
-	if priAbove == nil {
+	if len(priAbove) == 0 {
 		return
 	}
 
@@ -186,6 +186,10 @@ func (w *Wallet) HndlBlk(b *block.Block) {
 // proto.NewTxInpt(...)
 // proto.NewTxOutpt(...)
 func (w *Wallet) HndlTxReq(txR *TxReq) {
+	if txR.Amt == 0 {
+		return
+	}
+
 	UTXOinfos, change, enoughUTXO := w.Chain.GetUTXOForAmt(txR.Amt+txR.Fee, hex.EncodeToString(w.Id.GetPublicKeyBytes()))
 
 	utils.Debug.Printf("Address {%v} got UTXOINFOs", utils.FmtAddr(w.Addr))

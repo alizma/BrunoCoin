@@ -53,6 +53,8 @@ func (n *Node) ChkBlk(b *block.Block) bool {
 		return false
 	} else if b == nil {
 		return false
+	} else if b.Transactions == nil {
+		return false
 	} else if len(b.Transactions[0].Outputs) <= 0 {
 		return false
 	} else if b.Transactions[0].SumOutputs() <= 0 {
