@@ -415,7 +415,7 @@ func (bc *Blockchain) GetUTXOForAmt(amt uint32, pubKey string) ([]*UTXOInfo, uin
 		txo.Liminal = false
 	}
 
-	return []*UTXOInfo{}, amtNeeded, false
+	return UTXOInfos, amtNeeded, false
 }
 
 // GenesisBlock creates the genesis block from
