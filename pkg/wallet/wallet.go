@@ -9,6 +9,8 @@ import (
 	"BrunoCoin/pkg/utils"
 	"encoding/hex"
 	"sync"
+
+	"fmt"
 )
 
 /*
@@ -127,6 +129,10 @@ func (w *Wallet) HndlBlk(b *block.Block) {
 
 	if len(priAbove) == 0 || priAbove == nil {
 		return
+	}
+
+	for _, tx := range priAbove {
+		fmt.Println("current tx: %v", tx.Hash())
 	}
 
 	for _, transaction := range priAbove {
