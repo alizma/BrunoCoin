@@ -150,8 +150,8 @@ func (bc *Blockchain) Add(b *block.Block) {
 	bc.Lock()
 	// add address of new node to map of BlockchainNodes
 	// with key being
-	bc.LastBlock = newNode
 	bc.blocks[newNode.Hash()] = newNode
+	bc.LastBlock = newNode
 	bc.Unlock()
 
 	utils.Debug.Printf("Address {%v} added block {%v}", utils.FmtAddr(bc.Addr), b.NameTag())
@@ -310,7 +310,6 @@ func (bc *Blockchain) ChkChainsUTXO(txs []*tx.Transaction, prevHash string) bool
 	lastBlock, found := bc.blocks[prevHash]
 	// If not found, this is an orphan, try to compare it against the last node
 
-	//utils.Debug.Printf("found:%v", found)
 	if !found {
 		lastBlock = bc.LastBlock
 	}

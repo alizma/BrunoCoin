@@ -213,7 +213,7 @@ func (w *Wallet) HndlTxReq(txR *TxReq) {
 	}
 	txOutputs = append(txOutputs, proto.NewTxOutpt(txR.Amt, hex.EncodeToString(txR.PubK)))
 
-	// utils.Debug.Printf("txInputs: %v", txInputs)
+	utils.Debug.Printf("txInputs: %v, change: %v", txInputs, change)
 	newTx := tx.Deserialize(proto.NewTx(w.Conf.TxVer, txInputs, txOutputs, w.Conf.DefLckTm))
 
 	utils.Debug.Printf("newTx: %v", newTx)

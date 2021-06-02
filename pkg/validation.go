@@ -48,6 +48,11 @@ import (
 // b.Sz()
 // n.Chain.ChkChainsUTXO(...)
 func (n *Node) ChkBlk(b *block.Block) bool {
+	if b.Transactions == nil {
+		utils.Debug.Printf("block has no transactions")
+		return false
+	}
+
 	if !b.Transactions[0].IsCoinbase() {
 		utils.Debug.Printf("is not coinbase")
 	} else if !b.SatisfiesPOW(b.Hdr.DiffTarg) {
@@ -111,7 +116,7 @@ func (n *Node) ChkTx(t *tx.Transaction) bool {
 		return false
 	}
 
-	if t.SumInputs() <= t.SumOutputs() {
+	if t.SumInputs() < t.SumOutputs() {
 		utils.Debug.Printf("failed suminputs %v < sumoutputs %v", t.SumInputs(), t.SumOutputs())
 		return false
 	}
