@@ -130,9 +130,6 @@ func (w *Wallet) HndlBlk(b *block.Block) {
 	}
 
 	for _, transaction := range priAbove {
-		if transaction == nil {
-			continue
-		}
 		transaction.LockTime += 1
 		w.SendTx <- transaction
 		w.LmnlTxs.Add(transaction)
