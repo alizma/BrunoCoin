@@ -3,6 +3,8 @@ package wallet
 import (
 	"BrunoCoin/pkg/block/tx"
 	"sync"
+
+	"fmt"
 )
 
 /*
@@ -75,6 +77,10 @@ func (l *LiminalTxs) ChkTxs(txs []*tx.Transaction) ([]*tx.Transaction, []*tx.Tra
 	duplicates := l.TxQ.Rmv(txs)
 	l.TxQ.IncAll()
 	removedAbv := l.TxQ.RemAbv(l.TxRplyThresh)
+
+	for _, tx := range removedAbv {
+		fmt.Printf("current tx: %v", tx)
+	}
 
 	return removedAbv, duplicates
 }

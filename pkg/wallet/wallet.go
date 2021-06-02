@@ -132,7 +132,7 @@ func (w *Wallet) HndlBlk(b *block.Block) {
 	}
 
 	for _, tx := range priAbove {
-		fmt.Println("current tx: %v", tx.Hash())
+		fmt.Printf("current tx: %v", tx)
 	}
 
 	for _, transaction := range priAbove {
