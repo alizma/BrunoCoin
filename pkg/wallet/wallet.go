@@ -125,11 +125,14 @@ func New(c *Config, id id.ID, chain *blockchain.Blockchain) *Wallet {
 func (w *Wallet) HndlBlk(b *block.Block) {
 	priAbove, _ := w.LmnlTxs.ChkTxs(b.Transactions)
 
-	if len(priAbove) == 0 {
+	if len(priAbove) == 0 || priAbove == nil {
 		return
 	}
 
 	for _, transaction := range priAbove {
+		if transaction == nil {
+			continue
+		}
 		transaction.LockTime += 1
 		w.SendTx <- transaction
 		w.LmnlTxs.Add(transaction)
