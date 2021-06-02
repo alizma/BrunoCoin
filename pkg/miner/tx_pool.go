@@ -76,7 +76,7 @@ func (tp *TxPool) PriMet() bool {
 // t.Sz()
 func CalcPri(t *tx.Transaction) uint32 {
 	if t == nil {
-		return 1
+		return 0
 	}
 
 	pri := (t.SumInputs() - t.SumOutputs()) * 100.0 / t.Sz()
