@@ -109,6 +109,7 @@ func (bc *Blockchain) SetAddr(a string) {
 // txo.MkTXOLoc(...)
 func (bc *Blockchain) Add(b *block.Block) {
 	bc.Lock()
+	defer bc.Unlock()
 
 	prev_node := bc.blocks[b.Hdr.PrvBlkHsh] //of type *BlockchainNode
 	new_utxo := make(map[string]*txo.TransactionOutput)
@@ -117,8 +118,6 @@ func (bc *Blockchain) Add(b *block.Block) {
 	for loc, curr_utxo := range prev_node.utxo {
 		new_utxo[loc] = curr_utxo
 	}
-
-	bc.Unlock()
 
 	// Remove all used UTXOs
 	for _, transaction := range b.Transactions {
@@ -152,12 +151,10 @@ func (bc *Blockchain) Add(b *block.Block) {
 		bc.LastBlock = newNode
 	}
 
-	bc.Lock()
 	// add address of new node to map of BlockchainNodes
 	// with key being
 	bc.blocks[newNode.Hash()] = newNode
 	//bc.LastBlock = newNode
-	bc.Unlock()
 
 	utils.Debug.Printf("Address {%v} added block {%v}", utils.FmtAddr(bc.Addr), b.NameTag())
 }
@@ -380,10 +377,6 @@ func (bc *Blockchain) GetUTXOForAmt(amt uint32, pubKey string) ([]*UTXOInfo, uin
 
 	if amtNeeded == 0 {
 		return []*UTXOInfo{}, 0, true
-	}
-
-	if amtNeeded == 1000000 {
-		return []*UTXOInfo{}, 2, true
 	}
 
 	UTXOInfos := make([]*UTXOInfo, 0)
