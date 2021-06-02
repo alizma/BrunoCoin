@@ -110,8 +110,14 @@ func (m *Miner) DifTrg() string {
 // t.SumOutputs()
 func (m *Miner) GenCBTx(txs []*tx.Transaction) *tx.Transaction {
 
-	if len(txs) <= 0 {
+	if len(txs) <= 0 || txs == nil {
 		return nil
+	}
+
+	for _, currTx := range txs {
+		if currTx == nil {
+			return nil
+		}
 	}
 
 	// ignore the fact that we need to check for the TimeLock
