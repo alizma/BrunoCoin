@@ -110,7 +110,7 @@ func (bc *Blockchain) SetAddr(a string) {
 func (bc *Blockchain) Add(b *block.Block) {
 	bc.Lock()
 
-	prev_node := bc.LastBlock //of type *BlockchainNode
+	prev_node := bc.blocks[b.Hdr.PrvBlkHsh] //of type *BlockchainNode
 	new_utxo := make(map[string]*txo.TransactionOutput)
 
 	// Make a copy of the original UTXOs
@@ -132,7 +132,7 @@ func (bc *Blockchain) Add(b *block.Block) {
 	// Add new UTXOs from block
 	for _, currTX := range b.Transactions {
 		for idx, currUTXO := range currTX.Outputs {
-			locator := txo.MkTXOLoc(currUTXO.Hash(), uint32(idx))
+			locator := txo.MkTXOLoc(currTX.Hash(), uint32(idx))
 			new_utxo[locator] = currUTXO
 		}
 	}
@@ -147,11 +147,16 @@ func (bc *Blockchain) Add(b *block.Block) {
 		new_utxo,
 		prev_node.depth + 1,
 	}
+
+	if bc.IsEndMainChain(b) {
+		bc.LastBlock = newNode
+	}
+
 	bc.Lock()
 	// add address of new node to map of BlockchainNodes
 	// with key being
 	bc.blocks[newNode.Hash()] = newNode
-	bc.LastBlock = newNode
+	//bc.LastBlock = newNode
 	bc.Unlock()
 
 	utils.Debug.Printf("Address {%v} added block {%v}", utils.FmtAddr(bc.Addr), b.NameTag())
@@ -371,14 +376,19 @@ func (bc *Blockchain) GetUTXOForAmt(amt uint32, pubKey string) ([]*UTXOInfo, uin
 	bc.Lock()
 	defer bc.Unlock()
 	prev_utxo := bc.LastBlock.utxo
-	var curAmt uint32 = 0
+	amtNeeded := amt
+
+	if amtNeeded == 0 {
+		return []*UTXOInfo{}, 0, true
+	}
 
 	UTXOInfos := make([]*UTXOInfo, 0)
 	for UTXOLocator, UTXO := range prev_utxo {
 		if UTXO.Liminal {
 			continue
 		}
-
+		utils.Debug.Printf("current amount needed: %v", amtNeeded)
+		utils.Debug.Printf("utxo lockingscript: %v, pubkey: %v", UTXO.LockingScript, pubKey)
 		if UTXO.LockingScript == pubKey {
 			tHash, idx := txo.PrsTXOLoc(UTXOLocator)
 
@@ -391,20 +401,24 @@ func (bc *Blockchain) GetUTXOForAmt(amt uint32, pubKey string) ([]*UTXOInfo, uin
 			bc.LastBlock.utxo[UTXOLocator].Liminal = true
 
 			UTXOInfos = append(UTXOInfos, newUTXOInfo)
-			// utils.Debug.Printf("current targetAmt: %v; current UTFOInfo amt: %v", targetAmt, newUTXOInfo.Amt)
+			utils.Debug.Printf("current targetAmt: %v; current UTFOInfo amt: %v", amtNeeded, newUTXOInfo.Amt)
 
-			if (UTXO.Amount + curAmt) >= amt {
-				return UTXOInfos, UTXO.Amount + curAmt - amt, true
+			if UTXO.Amount >= amtNeeded {
+				return UTXOInfos, UTXO.Amount - amtNeeded, true
 			}
 
-			curAmt += UTXO.Amount
-		}
+			amtNeeded -= UTXO.Amount
 
-		//utils.Debug.Printf("added new UTXOINFO {%v} with amt {%v", newUTXOInfo.TxHsh, newUTXOInfo.Amt)
+			utils.Debug.Printf("added new UTXOINFO {%v} with amt {%v", newUTXOInfo.TxHsh, newUTXOInfo.Amt)
+		}
 
 	}
 
-	return nil, 0, false
+	for _, txo := range bc.LastBlock.utxo {
+		txo.Liminal = false
+	}
+
+	return []*UTXOInfo{}, amtNeeded, false
 }
 
 // GenesisBlock creates the genesis block from

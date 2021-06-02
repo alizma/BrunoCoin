@@ -38,7 +38,7 @@ func (m *Miner) Mine() {
 			m.MiningPool = m.NewMiningPool()
 			txs := append([]*tx.Transaction{m.GenCBTx(m.MiningPool)}, m.MiningPool...)
 			b := block.New(m.PrvHsh, txs, m.DifTrg())
-			//utils.Debug.Printf("new block %v", b.NameTag())
+			utils.Debug.Printf("block transactions: %v", b.Transactions)
 			result := m.CalcNonce(ctx, b)
 			m.Mining.Store(false)
 			if result {
@@ -136,7 +136,7 @@ func (m *Miner) GenCBTx(txs []*tx.Transaction) *tx.Transaction {
 
 	ptrCBT := proto.NewTx(m.Conf.Ver, nil, CBTOutput, m.Conf.DefLckTm)
 
-	//utils.Debug.Printf("new transaction %v", ptrCBT.Version)
+	utils.Debug.Printf("new transaction w/ inputs: %v , outputs: %v", ptrCBT.Inputs, ptrCBT.Outputs)
 
 	return tx.Deserialize(ptrCBT)
 }

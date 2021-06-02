@@ -97,7 +97,7 @@ func (m *Miner) StartMiner() {
 // m.IncChnLen()
 // m.HndlChkBlk(...)
 func (m *Miner) HndlBlk(b *block.Block) {
-	m.SetHash(b.Hdr.PrvBlkHsh)
+	m.SetHash(b.Hash())
 	m.IncChnLen()
 	m.HndlChkBlk(b)
 }

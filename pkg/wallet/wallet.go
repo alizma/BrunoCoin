@@ -190,7 +190,7 @@ func (w *Wallet) HndlTxReq(txR *TxReq) {
 
 	utils.Debug.Printf("Address {%v} got UTXOINFOs", utils.FmtAddr(w.Addr))
 
-	utils.Debug.Printf("FAILED, UTXOinfos: %v, enoughUTXO: %v", UTXOinfos, enoughUTXO)
+	utils.Debug.Printf("UTXOinfos: %v, enoughUTXO: %v", UTXOinfos, enoughUTXO)
 
 	if !enoughUTXO {
 		return
@@ -203,8 +203,13 @@ func (w *Wallet) HndlTxReq(txR *TxReq) {
 			return
 		}
 
-		txInputs = append(txInputs, proto.NewTxInpt(currUTXOInfo.TxHsh, currUTXOInfo.OutIdx, unlckscrpt, currUTXOInfo.Amt))
-		utils.Debug.Printf("currentUTXOINFO Amt: %v", txInputs)
+		newInput := proto.NewTxInpt(currUTXOInfo.TxHsh, currUTXOInfo.OutIdx, unlckscrpt, currUTXOInfo.Amt)
+		txInputs = append(txInputs, newInput)
+		utils.Debug.Printf("Created new input: %v", newInput)
+	}
+
+	for _, currInput := range txInputs {
+		utils.Debug.Printf("current input: %v", currInput.TransactionHash)
 	}
 
 	txOutputs := make([]*proto.TransactionOutput, 0)
