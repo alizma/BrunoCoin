@@ -109,6 +109,11 @@ func (m *Miner) DifTrg() string {
 // t.SumInputs()
 // t.SumOutputs()
 func (m *Miner) GenCBTx(txs []*tx.Transaction) *tx.Transaction {
+
+	if len(txs) <= 0 {
+		return nil
+	}
+
 	// ignore the fact that we need to check for the TimeLock
 	// calculate the total fees from all the transactions
 	var total_fees uint32 = 0
