@@ -145,7 +145,6 @@ func AsrtBal(t *testing.T, n *pkg.Node, a uint32) {
 }
 
 func MakeSingleTx(n *pkg.Node, toPK []byte, factor uint32) *tx.Transaction {
-	// construct a transaction with two inputs and two outputs
 	inputUtxo1 := &txo.TransactionOutput{
 		Amount:        100 * factor,
 		LockingScript: hex.EncodeToString(n.Id.GetPublicKeyBytes()),

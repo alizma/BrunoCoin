@@ -29,7 +29,7 @@ func TestHndlActiveMnr(t *testing.T) {
 	genNd.Start()
 
 	mnr := miner.New(genNd.Mnr.Conf, genNd.Id)
-	mnr.Active.Store(false)
+	mnr.Active.Store(true)
 
 	tx := MakeSingleTx(genNd, genNd.Id.GetPublicKeyBytes(), 10)
 	mnr.HndlTx(tx)
@@ -45,7 +45,7 @@ func TestNilTxHndl(t *testing.T) {
 	genNd.Start()
 
 	mnr := miner.New(genNd.Mnr.Conf, genNd.Id)
-	mnr.Active.Store(false)
+	mnr.Active.Store(true)
 
 	mnr.HndlTx(nil)
 

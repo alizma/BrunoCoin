@@ -114,6 +114,8 @@ func TestHndlTxNoChange(t *testing.T) {
 	AsrtBal(t, genNd, 100000)
 	AsrtBal(t, node2, 0)
 }
+
+/*
 func TestHndlBlkNilBlk(t *testing.T) {
 	utils.SetDebug(true)
 	genNd := NewGenNd()
@@ -123,3 +125,4 @@ func TestHndlBlkNilBlk(t *testing.T) {
 
 	ChkMnChnLen(t, genNd, 1)
 }
+*/
