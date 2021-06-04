@@ -23,6 +23,6 @@ func TestPriCalcTxiTxo(t *testing.T) {
 	calculatedpri := miner.CalcPri(minitx)
 
 	if calculatedpri != (minitx.SumInputs()-minitx.SumOutputs())*100.0/minitx.Sz() {
-		t.Errorf("expected %d, actual; %d", calculatedpri, (minitx.SumInputs()-minitx.SumOutputs())*100.0/minitx.Sz())
+		t.Errorf("expected %d, actual; %d", (minitx.SumInputs()-minitx.SumOutputs())*100.0/minitx.Sz(), calculatedpri)
 	}
 }
