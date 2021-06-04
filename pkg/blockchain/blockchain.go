@@ -111,6 +111,10 @@ func (bc *Blockchain) Add(b *block.Block) {
 	bc.Lock()
 	defer bc.Unlock()
 
+	if len(b.Transactions) == 0 {
+		return
+	}
+
 	if b == nil {
 		return
 	}

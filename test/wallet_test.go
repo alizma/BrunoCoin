@@ -123,3 +123,17 @@ func TestHndlBlkNilBlk(t *testing.T) {
 
 	ChkMnChnLen(t, genNd, 1)
 }
+
+/*
+func TestHndlBlkEmptyTxBlk(t *testing.T) {
+	utils.SetDebug(true)
+	genNd := NewGenNd()
+	genNd.Start()
+
+	newBlk := block.New(genNd.Chain.LastBlock.Block.Hash(), []*tx.Transaction{}, genNd.Chain.LastBlock.Block.Hdr.DiffTarg)
+
+	genNd.Wallet.HndlBlk(newBlk)
+
+	ChkMnChnLen(t, genNd, 1)
+}
+*/

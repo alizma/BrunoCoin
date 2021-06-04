@@ -125,6 +125,10 @@ func New(c *Config, id id.ID, chain *blockchain.Blockchain) *Wallet {
 // t.NameTag()
 // w.SendTx <- ...
 func (w *Wallet) HndlBlk(b *block.Block) {
+	if len(b.Transactions) == 0 || b == nil {
+		return
+	}
+
 	priAbove, _ := w.LmnlTxs.ChkTxs(b.Transactions)
 
 	if len(priAbove) == 0 || priAbove == nil {
