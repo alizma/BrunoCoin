@@ -29,6 +29,8 @@ func TestAddEmptyTxBlk(t *testing.T) {
 
 	genNd.Chain.Add(newBlk)
 
+	genNd.Mnr.Mine()
+
 	ChkMnChnLen(t, genNd, 1)
 }
 */

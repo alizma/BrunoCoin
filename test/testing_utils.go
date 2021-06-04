@@ -4,15 +4,18 @@ import (
 	"BrunoCoin/pkg"
 	"BrunoCoin/pkg/block"
 	"BrunoCoin/pkg/block/tx"
+	"BrunoCoin/pkg/block/tx/txi"
+	"BrunoCoin/pkg/block/tx/txo"
 	"BrunoCoin/pkg/blockchain"
 	"BrunoCoin/pkg/id"
 	"BrunoCoin/pkg/utils"
 	"encoding/hex"
 	"fmt"
-	"github.com/phayes/freeport"
 	"log"
 	"os"
 	"testing"
+
+	"github.com/phayes/freeport"
 )
 
 func GetFreePort() int {
@@ -29,7 +32,6 @@ func GenConf(port int) *pkg.Config {
 	c.CstmIDObj, _ = id.LoadInSmplID(blockchain.GENPK, blockchain.GENPVK)
 	return c
 }
-
 
 // First node is always the genesis node
 func NewCluster(n int) []*pkg.Node {
@@ -66,11 +68,9 @@ func CheckChainLengths(t *testing.T, c []*pkg.Node, lens []int) {
 	}
 }
 
-
 func NewGenNd() *pkg.Node {
 	return pkg.New(GenConf(GetFreePort()))
 }
-
 
 func ChkNdPrs(t *testing.T, n *pkg.Node, prs []*pkg.Node) {
 	for _, pr := range prs {
@@ -80,13 +80,11 @@ func ChkNdPrs(t *testing.T, n *pkg.Node, prs []*pkg.Node) {
 	}
 }
 
-
 func ChkTxSeenLen(t *testing.T, n *pkg.Node, ln int) {
 	if len(n.TxMap) != ln {
 		t.Errorf("Failed: Node was expected to see %v txs, but has only seen %v", ln, len(n.TxMap))
 	}
 }
-
 
 func ChkMnChnLen(t *testing.T, n *pkg.Node, l int) {
 	t.Helper()
@@ -139,7 +137,6 @@ func SndDmyTx(n *pkg.Node, t *tx.Transaction) {
 	}
 }
 
-
 func AsrtBal(t *testing.T, n *pkg.Node, a uint32) {
 	pk := hex.EncodeToString(n.Id.GetPublicKeyBytes())
 	if n.GetBalance(pk) != a {
@@ -147,4 +144,44 @@ func AsrtBal(t *testing.T, n *pkg.Node, a uint32) {
 	}
 }
 
+func MakeSingleTx(n *pkg.Node, toPK []byte, factor uint32) *tx.Transaction {
+	// construct a transaction with two inputs and two outputs
+	inputUtxo1 := &txo.TransactionOutput{
+		Amount:        100 * factor,
+		LockingScript: hex.EncodeToString(n.Id.GetPublicKeyBytes()),
+	}
+	unlck1, _ := inputUtxo1.MkSig(n.Id)
+	txii1 := &txi.TransactionInput{
+		TransactionHash: inputUtxo1.Hash(),
+		OutputIndex:     0,
+		UnlockingScript: unlck1,
+		Amount:          inputUtxo1.Amount,
+	}
+	inputUtxo2 := &txo.TransactionOutput{
+		Amount:        200 * factor,
+		LockingScript: hex.EncodeToString(n.Id.GetPublicKeyBytes()),
+	}
+	unlck2, _ := inputUtxo2.MkSig(n.Id)
+	txii2 := &txi.TransactionInput{
+		TransactionHash: inputUtxo2.Hash(),
+		OutputIndex:     1,
+		UnlockingScript: unlck2,
+		Amount:          inputUtxo2.Amount,
+	}
 
+	txoo1 := &txo.TransactionOutput{
+		Amount:        200 * factor,
+		LockingScript: hex.EncodeToString(toPK),
+	}
+	txoo2 := &txo.TransactionOutput{
+		Amount:        50 * factor,
+		LockingScript: hex.EncodeToString(n.Id.GetPublicKeyBytes()),
+	}
+
+	return &tx.Transaction{
+		Version:  n.Wallet.Conf.TxVer,
+		Inputs:   []*txi.TransactionInput{txii1, txii2},
+		Outputs:  []*txo.TransactionOutput{txoo1, txoo2},
+		LockTime: n.Wallet.Conf.DefLckTm,
+	}
+}
