@@ -18,8 +18,10 @@ func TestHndlMnrTxInactive(t *testing.T) {
 
 	mnr.HndlTx(tx)
 
-	if mnr.TxP.Ct.Load() != 0 {
-		t.Errorf("expected failed, count is: %v, actual count is: %v", 0, mnr.TxP.Ct.Load())
+	updayted := <-mnr.PoolUpdated
+
+	if updayted {
+		t.Errorf("expected failed because the miner is inactive")
 	}
 }
 
