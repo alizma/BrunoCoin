@@ -114,12 +114,12 @@ func TestHndlTxNoChange(t *testing.T) {
 	AsrtBal(t, genNd, 100000)
 	AsrtBal(t, node2, 0)
 }
-func TestHndlBlkNilBlck(t *testing.T) {
+func TestHndlBlkNilBlk(t *testing.T) {
 	utils.SetDebug(true)
 	genNd := NewGenNd()
 	genNd.Start()
 
-	genNd.Chain.Add(nil)
+	genNd.Wallet.HndlBlk(nil)
 
 	ChkMnChnLen(t, genNd, 1)
 }
