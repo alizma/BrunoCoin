@@ -111,6 +111,10 @@ func (bc *Blockchain) Add(b *block.Block) {
 	bc.Lock()
 	defer bc.Unlock()
 
+	if b == nil {
+		return
+	}
+
 	prev_node := bc.blocks[b.Hdr.PrvBlkHsh] //of type *BlockchainNode
 	new_utxo := make(map[string]*txo.TransactionOutput)
 
