@@ -16,21 +16,3 @@ func TestAddNilBlck(t *testing.T) {
 
 	ChkMnChnLen(t, genNd, 1)
 }
-
-/*
-func TestAddEmptyTxBlk(t *testing.T) {
-	utils.SetDebug(true)
-	genNd := NewGenNd()
-	genNd.Conf.MnrConf.InitPOWD = utils.CalcPOWD(1)
-	genNd.Start()
-	genNd.StartMiner()
-
-	newBlk := block.New(genNd.Chain.LastBlock.Block.Hash(), []*tx.Transaction{}, genNd.Chain.LastBlock.Block.Hdr.DiffTarg)
-
-	genNd.Chain.Add(newBlk)
-
-	genNd.Mnr.Mine()
-
-	ChkMnChnLen(t, genNd, 1)
-}
-*/
