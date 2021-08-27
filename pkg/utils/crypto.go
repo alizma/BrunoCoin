@@ -7,13 +7,6 @@ import (
 	"crypto/x509"
 	"encoding/hex"
 )
-
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, Kotone
- *	Ninagawa, John Roy
- */
-
 // Hash returns the hash of the inputted
 // bytes as a hex string
 // Inputs:

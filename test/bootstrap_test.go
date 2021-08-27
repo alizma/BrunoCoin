@@ -7,13 +7,6 @@ import (
 	"time"
 )
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, John Roy
- *
- */
-
-
 // TestBootstrapEmpty starts two nodes. It
 // immediately bootstraps node 2 when there is
 // nothing to bootstrap.

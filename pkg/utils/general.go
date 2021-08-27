@@ -1,10 +1,5 @@
 package utils
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, John Roy
- */
-
 // RevStrArr (ReverseStringArray) reverses
 // the order of an array of strings in place.
 // Inputs:

@@ -4,11 +4,6 @@ import (
 	"unsafe"
 )
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson
- */
-
 // SzOfTx (SizeOfTransaction) returns the
 // size of the transaction in bytes.
 func SzOfTx(t *Transaction) uint32 {

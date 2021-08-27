@@ -5,10 +5,6 @@ import (
 	"math"
 )
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson
- */
 
 // Config represents the settings for the
 // Miner.

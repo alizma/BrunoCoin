@@ -11,10 +11,6 @@ import (
 	"strings"
 )
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, John Roy
- */
 
 // Header is a wrapper around the
 // protobuf block header for convenience

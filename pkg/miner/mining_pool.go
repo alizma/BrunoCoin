@@ -2,12 +2,6 @@ package miner
 
 import "BrunoCoin/pkg/block/tx"
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, Parker Ljung,
- *  Champ Chairattana-Apirom
- */
-
 // MiningPool is the list of transactions
 // that the miner is currently mining.
 type MiningPool []*tx.Transaction

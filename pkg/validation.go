@@ -6,13 +6,6 @@ import (
 	"BrunoCoin/pkg/utils"
 )
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, John Roy,
- *	Parker Ljung
- *
- */
-
 // ChkBlk (CheckBlock) validates a block based on multiple
 // conditions.
 // To be valid:

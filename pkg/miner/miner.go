@@ -11,10 +11,6 @@ import (
 	"go.uber.org/atomic"
 )
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, Parker Ljung
- */
 
 // Miner supports the functionality of mining new transactions broadcast from the network to a new block.
 // Conf represents the configuration (settings) for the miner.

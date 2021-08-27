@@ -13,11 +13,6 @@ import (
 	"fmt"
 )
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, Kotone Ninagawa
- */
-
 // TxReq (TransactionRequest) that represents
 // the minimum amount of information needed
 // to make a transaction.

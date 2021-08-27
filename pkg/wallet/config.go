@@ -1,9 +1,5 @@
 package wallet
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, Kotone Ninagawa
- */
 
 // Config represents the configuration (settings)
 // for the wallet.

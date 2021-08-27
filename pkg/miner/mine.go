@@ -9,11 +9,6 @@ import (
 	"encoding/hex"
 )
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, Parker Ljung
- */
-
 // Mine waits to be told to mine a block
 // or to kill it's thread. If it is asked
 // to mine, it selects the transactions

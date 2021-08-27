@@ -5,12 +5,6 @@ import (
 	"fmt"
 )
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, Parker Ljung,
- *	Kotone Ninagawa
- */
-
 // HeapNode (TransactionHeapNode) represents
 // a node within a heap or a priority queue.
 // P	uint32	the priority of the transaction.

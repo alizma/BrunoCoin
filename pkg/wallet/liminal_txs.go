@@ -7,11 +7,6 @@ import (
 	"fmt"
 )
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, Kotone Ninagawa
- */
-
 // LiminalTxs (LiminalTransactions) are
 // transactions that have been made by the
 // wallet but are not considered valid yet.

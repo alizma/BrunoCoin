@@ -1,9 +1,5 @@
 package blockchain
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, John Roy
- */
 
 // GENPK is the public key that was used
 // for the genesis transaction on the

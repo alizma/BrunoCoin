@@ -7,10 +7,6 @@ import (
 	"go.uber.org/atomic"
 )
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, Parker Ljung
- */
 
 // TxPool represents all the valid transactions
 // that the miner can mine.

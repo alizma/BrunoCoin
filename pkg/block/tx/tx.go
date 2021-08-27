@@ -10,12 +10,6 @@ import (
 	"strings"
 )
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, John Roy,
- *	Parker Ljung, Kotone Ninagawa
- */
-
 // Transaction is a wrapper around the
 // protobuf transaction so methods
 // can be called on it and additional fields

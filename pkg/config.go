@@ -8,12 +8,6 @@ import (
 	"time"
 )
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, John Roy
- *
- */
-
 // Config is the configuration for the node.
 // IdConf is the configuration for the id,
 // MnrConf is the configuration for the miner,

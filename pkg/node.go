@@ -22,13 +22,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, John Roy,
- *	Parker Ljung
- *
- */
-
 // Node is the interface for interacting with
 // the cryptocurrency. The node handles all top
 // level logic and communication between different

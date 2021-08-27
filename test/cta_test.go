@@ -12,11 +12,6 @@ import (
 	"time"
 )
 
-/*
- *  Brown University, CS1951L, Summer 2021
- *  Designed by: Colby Anderson, John Roy
- *
- */
 
 // Two nodes created. Genesis node makes transaction, followed
 // by another transaction attempted to be made (invalid
